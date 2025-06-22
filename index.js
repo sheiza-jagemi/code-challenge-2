@@ -1,182 +1,147 @@
-// DOM Elements
-const guestForm = document.getElementById('add-guest');
-const guestNameInput = document.getElementById('guest-name');
-const guestCategorySelect = document.getElementById('guest-category');
-const guestList = document.getElementById('guest-items');
-const guestCountEl = document.getElementById('guest-count');
-const alertBox = document.getElementById('alert-box');
+document.addEventListener('DOMContentLoaded', function() {
+  const guestForm = document.getElementById('guest-form');
+  const guestNameInput = document.getElementById('guest-name');
+  const guestCategorySelect = document.getElementById('guest-category');
+  const guestList = document.getElementById('guests');
+  const guestCountSpan = document.getElementById('guest-count');
+  const progressBar = document.getElementById('progress');
+  
+  let guests = [];
+  const MAX_GUESTS = 10;
 
-// Guest data
-let guests = [];
-const MAX_GUESTS = 10;
+  
+  const storedGuests = localStorage.getItem('guests');
+  if (storedGuests) {
+    guests = JSON.parse(storedGuests);
+  }
 
-// Format date function
-function formatDate(date) {
-    return new Date(date).toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        month: 'short',
-        day: 'numeric'
-    });
-}
-
-// Add guest function
-function addGuest(event) {
-    event.preventDefault();
+  guestForm.addEventListener('submit', function(e) {
+    e.preventDefault();
     
     const name = guestNameInput.value.trim();
     const category = guestCategorySelect.value;
     
     if (!name) {
-        alert('Please enter a guest name');
-        return;
+      alert('Please enter a guest name');
+      return;
     }
     
     if (guests.length >= MAX_GUESTS) {
-        alertBox.style.display = 'block';
-        setTimeout(() => {
-            alertBox.style.display = 'none';
-        }, 3000);
-        return;
+      alert(`Sorry, the guest list is limited to ${MAX_GUESTS} people.`);
+      return;
     }
     
     const newGuest = {
-        id: Date.now(),
-        name,
-        category,
-        isAttending: true,
-        addedAt: new Date()
+      id: Date.now(),
+      name,
+      category,
+      attending: true,
+      timestamp: new Date()
     };
     
     guests.push(newGuest);
+    saveGuests();
     renderGuestList();
     
-    // Reset form
     guestNameInput.value = '';
     guestNameInput.focus();
-}
-
-// Remove guest function
-function removeGuest(id) {
-    guests = guests.filter(guest => guest.id !== id);
-    renderGuestList();
-}
-
-// Toggle RSVP status
-function toggleRSVP(id) {
-    guests = guests.map(guest => {
-        if (guest.id === id) {
-            return { ...guest, isAttending: !guest.isAttending };
-        }
-        return guest;
-    });
-    renderGuestList();
-}
-
-// Edit guest name
-function editGuest(id, newName) {
-    if (!newName.trim()) return;
-    
-    guests = guests.map(guest => {
-        if (guest.id === id) {
-            return { ...guest, name: newName.trim() };
-        }
-        return guest;
-    });
-    renderGuestList();
-}
-
-// Render guest list
-function renderGuestList() {
-    // Update guest count
-    guestCountEl.textContent = guests.length;
+  });
+  
+  function saveGuests() {
+    localStorage.setItem('guests', JSON.stringify(guests));
+  }
+  
+  function renderGuestList() {
+    guestList.innerHTML = '';
+    guestCountSpan.textContent = guests.length;
+    progressBar.style.width = `${(guests.length / MAX_GUESTS) * 100}%`;
     
     if (guests.length === 0) {
-        guestList.innerHTML = `
-            <li class="empty-state">
-                <i class="fas fa-user-friends"></i>
-                <h3>No guests yet</h3>
-                <p>Add your first guest to get started</p>
-            </li>
-        `;
-        return;
-    }
-    
-    guestList.innerHTML = guests.map(guest => {
-        const categoryLabel = guest.category.charAt(0).toUpperCase() + guest.category.slice(1);
-        
-        return `
-            <li class="guest-item" data-id="${guest.id}">
-                <div class="guest-info">
-                    <div class="guest-name">
-                        ${guest.name}
-                        <span class="category ${guest.category}">${categoryLabel}</span>
-                    </div>
-                    <div class="guest-details">
-                        <span class="timestamp">Added: ${formatDate(guest.addedAt)}</span>
-                    </div>
-                </div>
-                <div class="rsvp-status ${guest.isAttending ? 'attending' : 'not-attending'}" 
-                     onclick="toggleRSVP(${guest.id})">
-                    ${guest.isAttending ? 'Attending' : 'Not Attending'}
-                </div>
-                <div class="guest-actions">
-                    <div class="action-btn edit-btn" onclick="openEditForm(${guest.id})">
-                        <i class="fas fa-edit"></i>
-                    </div>
-                    <div class="action-btn delete-btn" onclick="removeGuest(${guest.id})">
-                        <i class="fas fa-trash"></i>
-                    </div>
-                </div>
-            </li>
-        `;
-    }).join('');
-}
-
-// Open edit form
-function openEditForm(id) {
-    const guest = guests.find(g => g.id === id);
-    if (!guest) return;
-    
-    const guestItem = document.querySelector(`.guest-item[data-id="${id}"]`);
-    guestItem.innerHTML = `
-        <div class="edit-form">
-            <h3>Edit Guest</h3>
-            <input type="text" id="edit-name" value="${guest.name}" placeholder="Guest name">
-            <div class="edit-buttons">
-                <button class="save-btn" onclick="saveEdit(${id})">
-                    <i class="fas fa-save"></i> Save
-                </button>
-                <button class="cancel-btn" onclick="renderGuestList()">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-            </div>
+      guestList.innerHTML = `
+        <div class="empty-state">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100" height="100" fill="#3498db">
+            <path d="M0 0h24v24H0z" fill="none"/>
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+          </svg>
+          <h3>No guests added yet</h3>
+          <p>Add your first guest to start managing your event</p>
         </div>
-    `;
-    
-    document.getElementById('edit-name').focus();
-}
-
-// Save edited name
-function saveEdit(id) {
-    const newName = document.getElementById('edit-name').value;
-    editGuest(id, newName);
-}
-
-// Event listeners
-guestForm.addEventListener('click', addGuest);
-guestNameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        addGuest(e);
+      `;
+      return;
     }
+    
+    guests.forEach(guest => {
+      const li = document.createElement('li');
+      li.className = guest.category;
+      if (!guest.attending) {
+        li.classList.add('not-attending');
+      } else {
+        li.classList.add('attending');
+      }
+      
+      const guestInfo = document.createElement('div');
+      guestInfo.className = 'guest-info';
+      
+      const nameElement = document.createElement('div');
+      nameElement.className = 'guest-name';
+      nameElement.textContent = guest.name;
+      
+      const categoryElement = document.createElement('div');
+      categoryElement.className = 'guest-category';
+      categoryElement.textContent = guest.category.charAt(0).toUpperCase() + guest.category.slice(1);
+      
+      const timeElement = document.createElement('div');
+      timeElement.className = 'guest-time';
+      timeElement.textContent = `Added: ${guest.timestamp.toLocaleString()}`;
+      
+      guestInfo.appendChild(nameElement);
+      guestInfo.appendChild(categoryElement);
+      guestInfo.appendChild(timeElement);
+      
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'guest-actions';
+      
+      const rsvpButton = document.createElement('button');
+      rsvpButton.className = 'rsvp-toggle';
+      rsvpButton.textContent = guest.attending ? 'Attending' : 'Not Attending';
+      rsvpButton.addEventListener('click', () => {
+        guest.attending = !guest.attending;
+        saveGuests();
+        renderGuestList();
+      });
+      
+      const editButton = document.createElement('button');
+      editButton.className = 'edit-btn';
+      editButton.textContent = 'Edit';
+      editButton.addEventListener('click', () => {
+        const newName = prompt('Edit guest name:', guest.name);
+        if (newName && newName.trim() !== '') {
+          guest.name = newName.trim();
+          saveGuests();
+          renderGuestList();
+        }
+      });
+      
+      const deleteButton = document.createElement('button');
+      deleteButton.className = 'delete-btn';
+      deleteButton.textContent = 'Delete';
+      deleteButton.addEventListener('click', () => {
+        guests = guests.filter(g => g.id !== guest.id);
+        saveGuests();
+        renderGuestList();
+      });
+      
+      actionsDiv.appendChild(rsvpButton);
+      actionsDiv.appendChild(editButton);
+      actionsDiv.appendChild(deleteButton);
+      
+      li.appendChild(guestInfo);
+      li.appendChild(actionsDiv);
+      
+      guestList.appendChild(li);
+    });
+  }
+  
+  // Initial render
+  renderGuestList();
 });
-
-// Initialize
-renderGuestList();
-
-// Expose functions to global scope for inline event handlers
-window.removeGuest = removeGuest;
-window.toggleRSVP = toggleRSVP;
-window.openEditForm = openEditForm;
-window.saveEdit = saveEdit;
-window.renderGuestList = renderGuestList;

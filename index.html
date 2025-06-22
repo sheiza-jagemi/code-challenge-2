@@ -1,63 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Guest List Manager</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Guest List Manager</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎉 Event Guest List Manager</h1>
-            <p>Manage your event guests with ease</p>
-        </header>
-        
-        <div class="guest-counter">
-            <span>Total Guests:</span>
-            <span class="counter-highlight" id="guest-count">0</span>
-            <span>/10</span>
+  <div class="container">
+    <h1>Terry Event Guest List Manager</h1>
+    
+    <div class="form-container">
+      <form id="guest-form">
+        <div class="form-group">
+          <label for="guest-name">Guest Name:</label>
+          <input type="text" id="guest-name" placeholder="Enter guest name" required>
         </div>
-        
-        <div class="alert error" id="alert-box">
-            Guest list is full! Maximum 10 guests allowed.
+        <div class="form-group">
+          <label for="guest-category">Category:</label>
+          <select id="guest-category">
+            <option value="friend">Friend</option>
+            <option value="family">Family</option>
+            <option value="colleague">Colleague</option>
+          </select>
         </div>
-        
-        <div class="form-container">
-            <div class="form-row">
-                <div class="input-group">
-                    <label for="guest-name">Guest Name</label>
-                    <input type="text" id="guest-name" placeholder="Enter guest's name">
-                </div>
-                
-                <div class="input-group">
-                    <label for="guest-category">Category</label>
-                    <select id="guest-category">
-                        <option value="friend">Friend</option>
-                        <option value="family">Family</option>
-                        <option value="colleague">Colleague</option>
-                    </select>
-                </div>
-            </div>
-            
-            <button id="add-guest" class="submit-btn">
-                <i class="fas fa-plus-circle"></i> Add Guest
-            </button>
-        </div>
-        
-        <div class="guest-list">
-            <h2>Guest List</h2>
-            <ul id="guest-items">
-                <li class="empty-state">
-                    <i class="fas fa-user-friends"></i>
-                    <h3>No guests yet</h3>
-                    <p>Add your first guest to get started</p>
-                </li>
-            </ul>
-        </div>
+        <button type="submit">Add Guest</button>
+      </form>
     </div>
+    
+    <div id="guest-list">
+      <h2>Guest List (<span id="guest-count">0</span>/10)</h2>
+      <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+      </div>
+      <ul id="guests"></ul>
+    </div>
+  </div>
 
-    <script src="src/index.js"></script>
+  <script src="index.js"></script>
 </body>
 </html>
